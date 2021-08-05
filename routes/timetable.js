@@ -17,6 +17,19 @@ router.get('/halls/:sectionId', function(req, res, next) {
     })
 });
 
+
+router.get('/halls', function(req, res, next) {
+    connection2.query(`SELECT * FROM halls`,(err,result) => {
+        if (err) {
+            res.sendStatus(500);
+            return
+        }
+        res.send(result);
+    })
+});
+
+
+
 router.delete('/halls/:hallId', function(req, res, next) {
     connection2.query(`DELETE FROM halls WHERE idHall = ${req.params.hallId}`,(err,result) => {
         if (err) {
@@ -51,8 +64,29 @@ router.get('/schedule/:level/:year/:course/:sectionId', function(req, res, next)
     })
 });
 
+
+
 router.get('/schedules/:sectionId/:year/:course', function(req, res, next) {
     connection2.query(`SELECT * FROM schedule WHERE year = '${req.params.year}' AND course = ${req.params.course} AND sectionId = ${req.params.sectionId}`, (err, result) => {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+            return
+        }
+        if (result.length > 0) {
+            result.forEach(r => {
+                r.levelData = JSON.parse(r.levelData);
+                r.schedule = JSON.parse(r.schedule);
+            })
+            res.send(result);
+        } else {
+            res.sendStatus(404);
+        }
+    })
+});
+
+router.get('/allSchedules/:year/:course', function(req, res, next) {
+    connection2.query(`SELECT * FROM schedule WHERE year = '${req.params.year}' AND course = ${req.params.course}`, (err, result) => {
         if (err) {
             console.log(err);
             res.sendStatus(500);
